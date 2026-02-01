@@ -25,23 +25,23 @@
      ```bash
      cd terraform
      terraform init
-        ```
+     ```
 3. Plan the infrastructure
 
      ```bash
      terraform plan
-        ```
+     ```
 4. Create resources - Terraform will provision VPC, subnets, Node groups, IAM roles, security groups, etc.
 
      ```bash
      terraform apply --auto-approve
-        ```
+     ```
 5. After creation, update your kubeconfig and verify:
 
      ```bash
      aws eks update-kubeconfig --name <your-cluster-name> --region <your-region>
      kubectl get nodes
-        ```
+     ```
      
   
    
