@@ -157,9 +157,9 @@
      ```bash
      kubectl apply -f full_stack_lb.yaml
      ```
-## Step - 8: Monitoring tools setup
+## Step - 9: Monitoring tools setup
 
-1. Install Prometheus & Grafana:
+1. Setting up Prometheus & Grafana (for metrics):
    - Add Helm Repo
 
      ```bash
@@ -171,7 +171,7 @@
      ```bash
      kubectl create ns monitoring
      ```
-   - Install kube-prometheus-stack: This installs Prometheus, Grafana, Alertmanager, Node Exporter, kube-state-metrics.
+   - Install kube-prometheus-stack: This installs Prometheus, Grafana, Alertmanager, Node Exporter, and kube-state-metrics.
 
      ```bash
      helm install monitoring prometheus-community/kube-prometheus-stack \
@@ -193,9 +193,9 @@
      kubectl get svc -n monitoring
      ```
    - Accessing Grafana UI:
-     The above command gives you services and you can see an external IP provided for grafa to access its UI. Access it through the browser using http://<your-external-IP>
+     The above command gives you services, and you can see an external IP provided for Grafana to access its UI. Access it through the browser using http://<your-external-IP>
      user name: admin
-     password: access your password using below command,
+     password: access your password using the command,
      
      ```bash
      kubectl get secret monitoring-grafana \
@@ -204,6 +204,80 @@
      ```
    - Importing Dashboards:
      Go to dashboards and click on import (+ symbol on top right) -> Enter dashboard ID -> Click on load -> Click on import
+     You will get Node metrics, Pod metrics, and Cluster metrics
+
+2. Setting Up CloudWatch (for application Logs):
+   1. If you just want basic logs:
+
+     ```bash
+     kubectl get pods -n workshop
+     kubectl logs <pod-name> -n workshop
+     ```
+   2. Viewing logs using CloudWatch:
+      - Create a file named fluent-bit-policy.json in the Terraform folder:
+
+        ```bash
+        cd /three-tier-eks-iac/terraform
+        nano fluent-bit-policy.json
+        ```
+      - Paste this into the above file.
+
+        {
+           "Version": "2012-10-17",
+           "Statement": [
+             {
+               "Action": [
+                 "logs:CreateLogGroup",
+                 "logs:CreateLogStream",
+                 "logs:PutLogEvents"
+               ],
+               "Effect": "Allow",
+               "Resource": "*"
+             }
+           ]
+         }
+      - Create IAM Policy for CloudWatch Logs:
+
+        ```bash
+        aws iam create-policy \
+        --policy-name FluentBitCloudWatchPolicy \
+        --policy-document file://fluent-bit-policy.json
+        ```
+      - Install Fluent Bit via Helm:
+        Add repo:
+
+        ```bash
+        helm repo add eks https://aws.github.io/eks-charts
+        helm repo update
+        ```
+        Install:
+
+        ```bash
+        helm install fluent-bit eks/aws-for-fluent-bit \
+        --namespace monitoring\
+        ```
+      - View Logs in CloudWatch: AWS Console → CloudWatch → Log Groups (my-eks-cluster)
+      - You can view frontend logs, backend logs, pod logs, and container logs
+      - Enable EKS Control Plane Logs:
+
+        ```bash
+        aws eks update-cluster-config \
+        --region ap-southeast-2 \
+        --name my-eks-cluster \
+        --logging '{"clusterLogging":[{"types":["api","audit","authenticator","controllerManager","scheduler"],"enabled":true}]}'
+        ```
+      - This sends Control plane logs, i.e, API server logs, Audit logs, and Auth logs to CloudWatch.
+
+## Step - 10: Setting up Alert Manager and Slack notifications
+
+## Step - 11: Accessing the application
+
+        
+        
+
+        
+
+   
 
 
      
