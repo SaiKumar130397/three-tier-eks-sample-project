@@ -17,7 +17,32 @@
 1. Create an IAM user with AdministratorAccess (or least privileges for EKS, IAM, EC2, ECR).
 2. Configure AWS CLI (aws configure)
 
-## Step - 3: Provision EKS Cluster with Terraform
+## Step - 3: Create S3 Bucket, DynamoDB Table
+1. S3 Bucket
+   
+    ```bash
+      aws s3 mb s3://<your-unique-bucket-name>
+    ```
+2. DynamoDB Table (for state locking) - Replace region
+
+    ```bash
+      aws dynamodb create-table \
+    --table-name eks-terraform-lock \
+    --attribute-definitions AttributeName=LockID,AttributeType=S \
+    --key-schema AttributeName=LockID,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST \
+    --region us-east-1
+    ```
+3. Edit Backend Configuration
+   
+    ```bash
+    ls terraform
+    vi backend.tf
+    ```
+   - Replace bucket = "saikumar-eks-tfstate-bucket" and region with your bucket name, region, and add DynamoDB table name dynamodb_table = "your-table-name" and save the file.
+   
+
+## Step - 4: Provision EKS Cluster with Terraform
 
 1. Clone the repo into your VM and go to the terraform folder:
 2. Initialize Terraform
