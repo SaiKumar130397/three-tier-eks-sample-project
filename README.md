@@ -67,9 +67,152 @@
      ```bash
      aws eks update-kubeconfig --name <your-cluster-name> --region <your-region>
      kubectl get nodes
+     kubectl get pods -n kube-system
      ```
-     
+## Step - 5: Create ECR Repository
+
+1. ECR repository for frontend:
+
+   ```bash
+   aws ecr create-repository \
+   --repository-name workshop-frontend \
+   --region ap-southeast-2
+   ```
+2. ECR repository for frontend:
+
+   ```bash
+   aws ecr create-repository \
+   --repository-name workshop-backend \
+   --region ap-southeast-2
+   ```
+3. Authenticate Docker to ECR:
+   - ECR is a private registry by default. So only authenticated AWS principals can push/pull images to/from it.
+   - AWS provides a temporary login token that Docker can use as a password to access the ECR.
+   - EKS worker nodes can pull from ECR because they have IAM roles, and the IAM role allows ECR access. 
+
+   ```bash
+   aws ecr get-login-password --region ap-southeast-2 \
+   | docker login \
+     --username AWS \
+     --password-stdin <YOUR_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com
+   ```
   
+ ## Step - 6: Build & Push Docker Images
+ 
+ 1. Go to the app directory and then to the frontend folder where your Dockerfile for frontend exists. Build the image for your frontend:
+
+    ```bash
+    docker build -t workshop-frontend:v1 .
+    docker tag workshop-frontend:v1 \
+    <YOUR_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/workshop-frontend:v1
+    docker push <YOUR_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/workshop-frontend:v1
+    ```
+ 2. Now move to the backend folder and do the same:
+
+    ```bash
+    docker build -t workshop-backend:v1 . 
+    docker tag workshop-backend:v1 \
+    <YOUR_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/workshop-backend:v1
+    docker push <YOUR_ACCOUNT_ID>.dkr.ecr.ap-southeast-2.amazonaws.com/workshop-backend:v1
+    ```
+
+## Step - 7: Create Kubernetes Namespace & Set Context
+
+1. A namespace is a logical isolation inside a cluster. We create it to isolate the application (your entire 3-tier app is contained in a single namespace).
+2. We have frontend and backend deployment, MongoDB, services, load balancer. If you don't create a namespace, everything goes into the default and can get messy.
+3. And we set the context to avoid typing -n workshop repeatedly.
+
+   ```bash
+   kubectl create ns workshop
+   kubectl config set-context --current --namespace=workshop
+   ```
+
+## Step - 8: Deploy Kubernetes Manifests
+
+1. K8s manifests are in the k8s_manifests folder.
+   - MongoDB:
+
+     ```bash
+     cd k8s_manifests/mongo
+     kubectl apply -f secrets.yaml
+     kubectl apply -f deploy.yaml
+     kubectl apply -f service.yaml
+     ```
+   - Backend API:
+
+     ```bash
+     cd k8s_manifestsap
+     kubectl apply -f backend-deployment.yaml
+     kubectl apply -f backend-service.yaml
+     ```
+   - Frontend App:
+
+     ```bash
+     cd k8s_manifestsap
+     kubectl apply -f frontend-deployment.yaml
+     kubectl apply -f frontend-service.yaml
+     ```
+   - Expose Full Stack (Load Balancer):
+
+     ```bash
+     kubectl apply -f full_stack_lb.yaml
+     ```
+## Step - 8: Monitoring tools setup
+
+1. Install Prometheus & Grafana:
+   - Add Helm Repo
+
+     ```bash
+     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+     helm repo update
+     ```
+   - Create Monitoring Namespace:
+
+     ```bash
+     kubectl create ns monitoring
+     ```
+   - Install kube-prometheus-stack: This installs Prometheus, Grafana, Alertmanager, Node Exporter, kube-state-metrics.
+
+     ```bash
+     helm install monitoring prometheus-community/kube-prometheus-stack \
+     --namespace monitoring
+     ```
+   - Check its status by running:
+
+     ```bash
+     kubectl get pods -n monitoring
+     ```
+   - Expose Grafana:
+     
+     ```bash
+     kubectl edit svc monitoring-grafana -n monitoring
+     ```
+     Change ClusterIP to LoadBalancer. Save & exit. Then,
+
+     ```bash
+     kubectl get svc -n monitoring
+     ```
+   - Accessing Grafana UI:
+     The above command gives you services and you can see an external IP provided for grafa to access its UI. Access it through the browser using http://<your-external-IP>
+     user name: admin
+     password: access your password using below command,
+     
+     ```bash
+     kubectl get secret monitoring-grafana \
+     -n monitoring \
+     -o jsonpath="{.data.admin-password}" | base64 -d
+     ```
+   - Importing Dashboards:
+     Go to dashboards and click on import (+ symbol on top right) -> Enter dashboard ID -> Click on load -> Click on import
+
+
+     
+
+     
+     
+
+
+     
    
 
      
