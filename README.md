@@ -39,7 +39,8 @@
     ls terraform
     vi backend.tf
     ```
-   - Replace bucket = "saikumar-eks-tfstate-bucket" and region with your bucket name, region, and add DynamoDB table name dynamodb_table = "your-table-name" and save the file.
+   - Replace the bucket name and region with yours. 
+   - Add DynamoDB table name to the file: dynamodb_table = "your-table-name" and save the file.
    
 
 ## Step - 4: Provision EKS Cluster with Terraform
