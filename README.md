@@ -237,6 +237,7 @@
         ```
       - Paste this into the above file.
 
+        ```bash
         {
            "Version": "2012-10-17",
            "Statement": [
@@ -251,6 +252,7 @@
              }
            ]
          }
+        ```
       - Create IAM Policy for CloudWatch Logs:
 
         ```bash
