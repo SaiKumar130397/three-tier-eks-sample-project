@@ -157,6 +157,21 @@
      ```bash
      kubectl apply -f full_stack_lb.yaml
      ```
+2. Here, while we run terraform init, it reads root .tf files and downloads the modules (EKS, VPC, IAM) into the .terraform/modules directory.
+   - You can inspect the main.tf files that are present in each folder of EKS, VPC.
+
+     ```bash
+     cd .terraform/modules
+     ls
+     ```
+   - You can see folders for EKS and VPC. Go to each folder and you can see a main.tf files, eks modules, and other required files downloaded after running terraform init.
+
+     ```bash
+     cd eks
+     ls
+     ```
+   - During the terraform apply stage, the VPC module will create VPCs, Subnets, NAT, etc. The EKS module will create an EKS cluster, Node groups, IAM roles, and security groups.
+     
 ## Step - 9: Monitoring tools setup
 
 1. Setting up Prometheus & Grafana (for metrics):
