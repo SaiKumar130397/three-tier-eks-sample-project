@@ -284,9 +284,11 @@
    kubectl get svc -n workshop
    ```
    - Among the other services, you will see a LoadBalancer service with an external IP assigned to it and the port it is exposed on.
+   - If you do not see a service for a LoadBalancer, try to redeploy the full_stack_lb.yaml manifest file, or you can just change your frontend service from a ClusterIP to a LoadBalancer and use its external IP to access the application.
      
 3. Open your browser and access the application using the external IP and port number of your LoadBalancer.
    - http://<EXTERNAL-IP>:<PORT>
+     
 
    
 
