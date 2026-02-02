@@ -175,6 +175,9 @@
 ## Step - 9: Monitoring tools setup
 
 1. Setting up Prometheus & Grafana (for metrics):
+   - We need Prometheus inside the cluster, where we cannot just install Prometheus. We can just declare a desired state for Prometheus and the monitoring stack in Kubernetes manifests, and it just provides them.
+   - To do so, we need to download Prometheus manifests, apply CRDs, install node exporter, kube-state-metrics, Grafana, and Alert manager seperately manually. And also configure service monitors and all other communications manually.  
+   - Instead of doing all this, Helm just bundles all these and installs them with one command. 
    - Add Helm Repo
 
      ```bash
@@ -186,7 +189,7 @@
      ```bash
      kubectl create ns monitoring
      ```
-   - Install kube-prometheus-stack: This installs Prometheus, Grafana, Alertmanager, Node Exporter, and kube-state-metrics.
+   - Install kube-prometheus-stack: It is a Helm chart maintained by the Prometheus community that bundles Prometheus, Grafana, Alertmanager, Node Exporter, and kube-state-metrics and other required things and installs them in one go.
 
      ```bash
      helm install monitoring prometheus-community/kube-prometheus-stack \
@@ -221,7 +224,7 @@
      Go to dashboards and click on import (+ symbol on top right) -> Enter dashboard ID -> Click on load -> Click on import
      You will get Node metrics, Pod metrics, and Cluster metrics
 
-2. Setting Up CloudWatch (for application Logs):
+3. Setting Up CloudWatch (for application Logs):
    1. If you just want basic logs:
 
      ```bash
