@@ -1,7 +1,7 @@
 # three-tier-eks-sample-project
 ## Overview:
 
-- A sample project to deploy a 3-tier app by building Docker images for frontend and backend, pushing them to a registry, and then deploying the stack on Kubernetes by provisioning an AWS EKS cluster.
+- This project demonstrates a three-tier application deployment on AWS EKS using Infrastructure as Code (Terraform). It provisions networking, IAM, and EKS resources, and deploys a containerized frontend, backend API, and MongoDB database on Kubernetes. Monitoring and alerting are implemented using Prometheus, Grafana, and Alertmanager with Slack integration for observability.
 
 ## Step - 1: Prerequisites
 
@@ -271,6 +271,24 @@
 ## Step - 10: Setting up Alert Manager and Slack notifications
 
 ## Step - 11: Accessing the application
+
+1. Since this sample project uses EKS, the application is exposed via a LoadBalancer service. So, first confirm if all the pods are running.
+
+   ```bash
+   kubectl get pods -n workshop
+   ```
+   
+2. Now check if all the services are up and running.
+
+   ```bash
+   kubectl get svc -n workshop
+   ```
+   - Among the other services, you will see a LoadBalancer service with an external IP assigned to it and the port it is exposed on.
+     
+3. Open your browser and access the application using the external IP and port number of your LoadBalancer.
+   - http://<EXTERNAL-IP>:<PORT>
+
+   
 
         
         
