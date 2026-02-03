@@ -308,13 +308,11 @@
      config:
        global:
          resolve_timeout: 5m
-
        route:
          receiver: 'slack-notifications'
          group_wait: 30s
          group_interval: 5m
          repeat_interval: 4h
-
        receivers:
          - name: 'slack-notifications'
            slack_configs:
@@ -335,6 +333,9 @@
 
    ```bash
    nano test-alert.yaml
+   ```
+
+   ```bash
    apiVersion: monitoring.coreos.com/v1
    kind: PrometheusRule
    metadata:
@@ -365,7 +366,7 @@
      kubectl edit svc monitoring-kube-prometheus-alertmanager -n monitoring
      kubectl get svc -n monitoring
      ```
-   - You will get an external IP for your Alertmanager service. Use it with port 9093 to access the Alertmanager UI.
+   - You will get an external IP for your Alertmanager service. Use it with port 9093 to access the Alertmanager UI and check your alerts.
 
 ## Step - 11: Accessing the application
 
