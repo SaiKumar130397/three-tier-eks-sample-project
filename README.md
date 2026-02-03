@@ -290,6 +290,83 @@
 
 ## Step - 10: Setting up Alert Manager and Slack notifications
 
+1. Create Slack Webhook:
+   - Go to: https://api.slack.com/apps, click on 'create new app', choose 'from scratch', and select your workspace.
+   - Go to features and activate incoming webhooks.
+   - Click on 'Add new webhook to Workspace', select a channel, and click Allow.
+   - You will get a webhook URL. Copy it.
+
+2. Create Alertmanager Config File:
+   - We will override Alertmanager config via Helm. Create a file alertmanager-values.yaml and paste the code below into the file. Replace the URL in the code with your webhook URL.
+
+    ```bash
+    nano alertmanager-values.yaml
+    ```
+    
+    ```bash
+     alertmanager:
+     config:
+       global:
+         resolve_timeout: 5m
+
+       route:
+         receiver: 'slack-notifications'
+         group_wait: 30s
+         group_interval: 5m
+         repeat_interval: 4h
+
+       receivers:
+         - name: 'slack-notifications'
+           slack_configs:
+             - api_url: 'https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX'
+               channel: '#alerts'
+               send_resolved: true
+     ```
+    - Upgrade Helm Release.
+
+      ```bash
+      helm upgrade monitoring prometheus-community/kube-prometheus-stack \
+      -n monitoring \
+      -f alertmanager-values.yaml
+      kubectl get pods -n monitoring
+      ```
+3. Create a test alert:
+   - Create a simple CPU alert to test the alerts. Create a file test-alert.yaml and paste the below into it.
+
+   ```bash
+   nano test-alert.yaml
+   apiVersion: monitoring.coreos.com/v1
+   kind: PrometheusRule
+   metadata:
+     name: test-alert
+     namespace: monitoring
+   spec:
+     groups:
+       - name: test.rules
+         rules:
+           - alert: HighCPUNode
+             expr: sum(rate(node_cpu_seconds_total{mode!="idle"}[1m])) > 0
+             for: 1m
+             labels:
+               severity: warning
+             annotations:
+               summary: "Test CPU Alert"
+               description: "This is a test alert to verify Slack integration."
+   ```
+   - Apply it and wait a few minutes to receive the notification.
+
+     ```bash
+     kubectl apply -f test-alert.yaml
+     ```
+4. Verify Alertmanager UI:
+   - Expose Alertmanager. Edit the type from ClusterIP to LoadBalancer in its service file.
+     
+     ```bash
+     kubectl edit svc monitoring-kube-prometheus-alertmanager -n monitoring
+     kubectl get svc -n monitoring
+     ```
+   - You will get an external IP for your Alertmanager service. Use it with port 9093 to access the Alertmanager UI.
+
 ## Step - 11: Accessing the application
 
 1. Since this sample project uses EKS, the application is exposed via a LoadBalancer service. So, first confirm if all the pods are running.
@@ -316,10 +393,7 @@
    
 
         
-        
-
-        
-
+   
    
 
 
